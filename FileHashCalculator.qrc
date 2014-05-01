@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="copy.png">images/copy.png</file>
+        <file alias="cut.png">images/cut.png</file>
+        <file alias="newicon.png">images/new.png</file>
+        <file alias="openicon.png">images/open.png</file>
+        <file alias="paste.png">images/paste.png</file>
+        <file alias="saveicon.png">images/save.png</file>
+        <file alias="mainicon.icns">images/mainicon.icns</file>
+        <file alias="mainicon.ico">images/mainicon.ico</file>
+        <file alias="mainicon.png">images/mainicon.png</file>
+    </qresource>
+</RCC>
