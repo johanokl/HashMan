@@ -31,7 +31,12 @@ SOURCES     = gui/mainwindow.cpp \
     algorithms/qtcryptoalgorithms.cpp \
     hashcalcapplication.cpp
 
-TARGET = "File Hash Calculator"
+TARGET = "FileHashCalculator"
+
+macx {
+  # Include spaces in the file name if on Mac OS X.
+  TARGET = "File Hash Calculator"
+}
 
 QMAKE_INFO_PLIST += Info.plist
 OTHER_FILES += Info.plist
