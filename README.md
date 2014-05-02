@@ -6,6 +6,9 @@ Calculates hash sums for files.
 Supports multiple hashing algorithm, including CRC32, MD5 and SHA-1.  
 Can read, write and verify SFV files as well as scan directories for hashable files.
 
+### Screenshot
+![Screenshot 1](/screenshots/screenshot1.png?raw=true)
+
 ### Technical Details
 Written in C++ and uses Qt 5.2.  
 Uses multiple threads on multiple CPU cores where supported.  
