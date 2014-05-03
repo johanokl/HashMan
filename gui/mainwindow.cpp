@@ -405,6 +405,7 @@ void MainWindow::startProcessWork()
    progressbar->setMaximum(100);
    actionButtons->setEnabled(false);
    optionsBox->setEnabled(false);
+   directoriesGroupBox->setEnabled(false);
 }
 
 /**
