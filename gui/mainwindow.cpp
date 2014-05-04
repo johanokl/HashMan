@@ -184,7 +184,7 @@ void MainWindow::openFile(QString filename)
       QFileInfo fileInfo(filename);
       setWindowTitle(fileInfo.fileName() + tr(" - File Hash Calculator"));
       parent()->windowUpdated(this);
-      directoriesGroupBox->setEnabled(false);
+      sourceDirectoryWidget->setReadOnly(true);
    }
 }
 
@@ -405,7 +405,7 @@ void MainWindow::startProcessWork()
    progressbar->setMaximum(100);
    actionButtons->setEnabled(false);
    optionsBox->setEnabled(false);
-   directoriesGroupBox->setEnabled(false);
+   sourceDirectoryWidget->setReadOnly(true);
 }
 
 /**
@@ -560,12 +560,12 @@ void MainWindow::actionStopped()
       displayFileBox->setVisible(false);
       hashFilesButton->setVisible(false);
       clearResultsButton->setVisible(false);
-      directoriesGroupBox->setEnabled(true);
+      sourceDirectoryWidget->setReadOnly(false);
    } else {
       displayFileBox->setVisible(true);
       hashFilesButton->setVisible(true);
       clearResultsButton->setVisible(true);
-      directoriesGroupBox->setEnabled(false);
+      sourceDirectoryWidget->setReadOnly(true);
    }
    if (filelist->isHashPartiallyCompleted()) {
       verifyFilesButton->setVisible(true);

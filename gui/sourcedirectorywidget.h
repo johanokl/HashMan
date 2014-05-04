@@ -24,6 +24,7 @@ public slots:
    void setDir(QString dirpath);
    void openInExplorer();
    void setDirNode(SourceDirectory* node);
+   void setReadOnly(bool enable);
 
 public:
    SourceDirectoryWidget(SourceDirectory* node=0);

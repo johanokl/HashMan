@@ -107,6 +107,23 @@ void SourceDirectoryWidget::browseButtonAction()
 }
 
 /**
+ * @brief SourceDirectoryWidget::setReadOnly
+ * @param enable Set whether it shouldn't be possible to change which directory this points to.
+ * In this mode it's still possible to select and copy the entered address.
+ * Setting it to false reverts back to the normal behaviour.
+ */
+void SourceDirectoryWidget::setReadOnly(bool enable)
+{
+   if (enable) {
+     lineedit->setReadOnly(true);
+     browsebutton->setEnabled(false);
+   } else {
+     lineedit->setReadOnly(false);
+     browsebutton->setEnabled(true);
+   }
+}
+
+/**
  * @brief SourceDirectoryWidget::pathStatusChanged
  * @param isValid
  * The path verifier has changed the path status.
