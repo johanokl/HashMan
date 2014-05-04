@@ -530,6 +530,8 @@ void MainWindow::clearResults()
    if (msgBox.exec() == QMessageBox::Cancel) {
       return;
    }
+   // Remove any appended file name from the title bar.
+   setWindowTitle(tr("File Hash Calculator"));
    filelist->clearContents();
    actionStopped();
 }
