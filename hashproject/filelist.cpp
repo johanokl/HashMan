@@ -105,6 +105,8 @@ void FileList::removeSelectedRows()
       }
       emit fileListSizeChanged(rowCount(), numHashes, numVerifiedHashes, numInvalidFiles);
       emit processingDone();
+      // Reset the info bar widget.
+      emit displayFile("", "", "");
    }
 }
 
@@ -194,6 +196,8 @@ void FileList::clearContents()
    numInvalidFiles = 0;
    emit fileListSizeChanged(rowCount(), numHashes, numVerifiedHashes, numInvalidFiles);
    setVerificationColumnsVisibility(false);
+   // Reset the info bar widget.
+   emit displayFile("", "", "");
 }
 
 /**
