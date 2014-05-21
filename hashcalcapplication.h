@@ -34,7 +34,7 @@ signals:
    void windowsChanged();
 
 public slots:
-   void addWindow();
+   MainWindow* addWindow();
    void removeWindow(MainWindow*);
    void quit();
 

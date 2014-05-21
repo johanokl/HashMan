@@ -147,6 +147,20 @@ void MainWindow::closeEvent(QCloseEvent *event)
    }
 }
 
+
+/**
+ * @brief MainWindow::isListEmpty
+ * True if the list is empty and not write locked.
+ */
+bool MainWindow::isListEmpty()
+{
+   if (!filelist->writeLock(true)) {
+      return false;
+   }
+   filelist->writeLock(false);
+   return filelist->isEmpty();
+}
+
 /**
  * @brief MainWindow::saveFile
  * @param filename The location the file will be written to.

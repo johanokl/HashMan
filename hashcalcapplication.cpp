@@ -52,12 +52,13 @@ void HashCalcApplication::quit()
  * @brief HashCalcApplication::addWindow
  * Adds a new MainWindow.
  */
-void HashCalcApplication::addWindow()
+MainWindow* HashCalcApplication::addWindow()
 {
    MainWindow* newWindow = new MainWindow(this);
    mainwindows.push_back(newWindow);
    newWindow->show();
    emit windowsChanged();
+   return newWindow;
 }
 
 /**
@@ -92,7 +93,13 @@ void HashCalcApplication::windowUpdated(MainWindow*)
  */
 bool HashCalcApplication::event(QEvent * event) {
    if (event->type() == QEvent::FileOpen) {
-      static_cast<MainWindow*>(this->activeWindow())->openFile(static_cast<QFileOpenEvent*>(event)->file());
+      MainWindow* projectWindow = mainwindows.last();
+      if (mainwindows.length() != 1 || !projectWindow->isListEmpty()) {
+         // There are either multiple windows opened or the only one open
+         // already contains data. Create a new fresh window for this project file.
+         projectWindow = this->addWindow();
+      }
+      projectWindow->openFile(static_cast<QFileOpenEvent*>(event)->file());
       return true;
    }
    return QApplication::event(event);

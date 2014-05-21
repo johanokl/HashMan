@@ -39,10 +39,8 @@ class MainWindow : public QMainWindow
 public:
    MainWindow(HashCalcApplication *parent=0);
    ~MainWindow();
-
-
    HashCalcApplication* parent() const { return parentapp; }
-
+   bool isListEmpty();
 
 signals:
    void findFiles(HashProject*);
