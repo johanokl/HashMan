@@ -102,7 +102,7 @@ void SourceDirectoryWidget::browseButtonAction()
    QString dir = QFileDialog::getExistingDirectory(this, tr("Select Directory"), lineedit->text(),
                                                    QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
    if (!dir.isNull()) {
-      lineedit->setText(dir);
+      setDir(dir);
    }
 }
 
