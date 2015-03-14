@@ -13,6 +13,7 @@
  */
 SourceDirectory::SourceDirectory(QString dir)
 {
+   validpath = false;
    if (dir.isEmpty()) {
       dir = QDir::homePath();
    }
