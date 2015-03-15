@@ -54,7 +54,6 @@ FileList::FileList(HashProject* parent)
    setEditTriggers(QAbstractItemView::NoEditTriggers);
    setHorizontalHeaderLabels(labels);
    setColumnHidden(0, true);
-   setColumnHidden(2, true);
    removeHashes();
    horizontalHeader()->setStretchLastSection(false);
    horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
@@ -223,6 +222,11 @@ void FileList::setVerificationColumnsVisibility(bool visible)
 {
    setColumnHidden(4, !visible);
    setColumnHidden(5, !visible);
+}
+
+void FileList::setFileSizeVisibility(bool visible)
+{
+   setColumnHidden(2, !visible);
 }
 
 /**

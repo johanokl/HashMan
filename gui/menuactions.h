@@ -32,6 +32,7 @@ public slots:
    void showAboutDialog();
    void setMenubarVisible(bool);
    void setSidebarVisible(bool);
+   void setFileSizeVisible(bool);
    void openFile();
    void saveFile();
    void filelistChanged(int, int, int, int);
@@ -58,6 +59,7 @@ private:
    QAction* aboutAct;
    QAction* displaySidebarAct;
    QAction* displayFileToolbarAct;
+   QAction* displayFileSizeAct;
 
    MainWindow* parentwindow;
 

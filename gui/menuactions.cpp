@@ -45,6 +45,7 @@ MenuActions::~MenuActions()
    QSettings settings;
    settings.setValue("sidebarvisible", displaySidebarAct->isChecked());
    settings.setValue("filetoolbarvisible", displayFileToolbarAct->isChecked());
+   settings.setValue("filesizevisible", displayFileSizeAct->isChecked());
    settings.setValue("lastopeneddirectory", lastOpenedDirectory);
 
    delete fileToolBar;
@@ -117,6 +118,12 @@ void MenuActions::createActions()
    displayFileToolbarAct->setCheckable(true);
    displayFileToolbarAct->setChecked(true);
    connect(displayFileToolbarAct, SIGNAL(triggered(bool)), this, SLOT(setMenubarVisible(bool)));
+
+   displayFileSizeAct = new QAction(tr("Display file size"), parent());
+   displayFileSizeAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_F));
+   displayFileSizeAct->setCheckable(true);
+   displayFileSizeAct->setChecked(true);
+   connect(displayFileSizeAct, SIGNAL(triggered(bool)), this, SLOT(setFileSizeVisible(bool)));
 
    aboutAct = new QAction(tr("&About"), parent());
    aboutAct->setStatusTip(tr("Show the application's About box"));
@@ -192,6 +199,7 @@ void MenuActions::createMenus()
    windowMenu = parent()->menuBar()->addMenu(tr("&Window"));
    windowMenu->addAction(displaySidebarAct);
    windowMenu->addAction(displayFileToolbarAct);
+   windowMenu->addAction(displayFileSizeAct);
    windowMenu->addSeparator();
 
    helpMenu = parent()->menuBar()->addMenu(tr("&Help"));
@@ -208,6 +216,7 @@ void MenuActions::createMenus()
    QSettings settings;
    this->setMenubarVisible(settings.value("filetoolbarvisible", true).toBool());
    this->setSidebarVisible(settings.value("sidebarvisible", true).toBool());
+   this->setFileSizeVisible(settings.value("filesizevisible", true).toBool());
 }
 
 /**
@@ -246,6 +255,12 @@ void MenuActions::setMenubarVisible(bool display)
 {
    fileToolBar->setVisible(display);
    displayFileToolbarAct->setChecked(display);
+}
+
+void MenuActions::setFileSizeVisible(bool display)
+{
+    parent()->setFileSizeVisible(display);
+    displayFileSizeAct->setChecked(display);
 }
 
 /**

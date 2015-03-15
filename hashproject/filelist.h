@@ -60,6 +60,7 @@ public slots:
    void removeHashes();
    void removeVerifiedHashes();
    void setVerificationColumnsVisibility(bool visible);
+   void setFileSizeVisibility(bool visible);
    void rowSelectionChanged();
 
 protected:

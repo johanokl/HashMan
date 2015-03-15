@@ -63,6 +63,7 @@ public slots:
    void saveFile(QString);
    void openFile(QString);
    void setSidebarVisible(bool);
+   void setFileSizeVisible(bool);
    void updateFileDisplay(QString basepath, QString filename, QString hash);
    void updateProjectSettings();
    //

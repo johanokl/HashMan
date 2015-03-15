@@ -388,6 +388,11 @@ void MainWindow::removeSelectedRows()
    filelist->removeSelectedRows();
 }
 
+void MainWindow::setFileSizeVisible(bool visible)
+{
+   filelist->setFileSizeVisibility(visible);
+}
+
 /**
  * @brief MainWindow::copySelectedRows
  * Copies the list of files selected in the file list to the system's clip board in text form.
