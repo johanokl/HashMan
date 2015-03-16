@@ -344,13 +344,16 @@ void FileList::processBuffer(bool forcedUpdate)
       if (!(*file).algorithm.isEmpty()) {
          algorithmcell->setText((*file).algorithm.toUpper());
       }
-      basepathcell->setFont(QFont("Helvetica", 13));
-      filenamecell->setFont(QFont("Helvetica", 13));
-      filesizecell->setFont(QFont("Helvetica", 13));
-      hashcell->setFont(QFont("Helvetica", 13));
-      verifyhashcell->setFont(QFont("Helvetica", 13));
-      ismatchcell->setFont(QFont("Helvetica", 13));
-      algorithmcell->setFont(QFont("Helvetica", 13));
+      QFont cellFont;
+      cellFont.setPointSize(cellFont.pointSize() - 1);
+      basepathcell->setFont(cellFont);
+      filenamecell->setFont(cellFont);
+      filesizecell->setFont(cellFont);
+      hashcell->setFont(cellFont);
+      verifyhashcell->setFont(cellFont);
+      ismatchcell->setFont(cellFont);
+      algorithmcell->setFont(cellFont);
+
       setItem(numFiles, 0, basepathcell);
       setItem(numFiles, 1, filenamecell);
       setItem(numFiles, 2, filesizecell);
