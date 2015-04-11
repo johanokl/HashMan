@@ -19,7 +19,6 @@
 #include <QObject>
 #include <QTableWidget>
 #include <QLinkedList>
-#include <QDebug>
 
 #include "hashproject.h"
 
@@ -46,8 +45,8 @@ public:
 
 signals:
    void fileListSizeChanged(int, int, int, int);
-   void displayFile(QString basepath, QString filename, QString hash);
-   void hashFile(int id, HashProject::File file, QString algorithm);
+   void displayFile(QString filename, QString hash);
+   void hashFile(int id, QString basepath, HashProject::File file, QString algorithm);
    void noMoreFileJobs();
    void processingDone();
 
@@ -58,8 +57,9 @@ public slots:
    void addFile(HashProject::File file, bool forceUpdate=false);
    void fileHashCalculated(int id, QString algorithm, QString hash, bool verify);
    void removeHashes();
-   void removeVerifiedHashes();
+   void removeVerifications();
    void setVerificationColumnsVisibility(bool visible);
+   void setHashesColumnsVisibility(bool visible);
    void setFileSizeVisibility(bool visible);
    void rowSelectionChanged();
 
@@ -70,6 +70,8 @@ private:
    void processBuffer(bool forcedUpdate=false);
 
    QList<HashProject::File> filesToAdd;
+
+   QString basePath;
 
    int numHashes;
    int numInvalidFiles;

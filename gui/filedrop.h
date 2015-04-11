@@ -30,8 +30,7 @@ public slots:
    void clear();
 
 signals:
-   void filesDropped(QLinkedList<HashProject::File>);
-   void directoryDropped(SourceDirectory* directory);
+   void directoryDropped(QString);
    void startProcessWork();
 
 protected:

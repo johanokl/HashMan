@@ -37,22 +37,21 @@ MainWindow::MainWindow(HashCalcApplication* parent) : QMainWindow()
    mainproject = new HashProject;
    filelist = mainproject->getDataTable();
 
-   createDirectoryBox();
-   createOptionsBox();
    createActionButtonBox();
+   createDirectoryBoxes();
+   createOptionsBox();
    createWorkerThreads();
    createFileDisplayBox();
 
    statusBox = new StatusBoxWidget;
 
    filedrop = new FileDrop(filelist);
-   connect(filedrop, SIGNAL(filesDropped(QLinkedList<HashProject::File>)), filelist, SLOT(addFiles(QLinkedList<HashProject::File>)));
-   connect(filedrop, SIGNAL(startProcessWork()), this, SLOT(startProcessWork()));
-   connect(filedrop, SIGNAL(startProcessWork()), hasher, SLOT(startProcessWork()));
-   connect(filedrop, SIGNAL(directoryDropped(SourceDirectory*)), mainproject, SLOT(setSourceDirectory(SourceDirectory*)));
+   connect(filedrop, SIGNAL(startProcessWork()), this, SLOT(startFileFinder()));
+   connect(filedrop, SIGNAL(directoryDropped(QString)), mainproject->getSourceDirectory(), SLOT(setPath(QString)));
 
    QVBoxLayout* controlLayout = new QVBoxLayout;
-   controlLayout->addWidget(directoriesGroupBox);
+   controlLayout->addWidget(sourceDirectoryBox);
+   controlLayout->addWidget(verifyDirectoryBox);
    controlLayout->addWidget(optionsBox);
    controlLayout->addWidget(statusBox);
    controlLayout->addWidget(actionButtonBox);
@@ -79,7 +78,7 @@ MainWindow::MainWindow(HashCalcApplication* parent) : QMainWindow()
    mainWidget = new QSplitter(this);
    mainWidget->addWidget(controlWidgets);
    mainWidget->addWidget(rightWidget);
-   mainWidget->setMinimumSize(1000, 700);
+   mainWidget->setMinimumSize(1000, 750);
    mainWidget->setChildrenCollapsible(false);
    mainWidget->setCollapsible(0, false);
    mainWidget->setCollapsible(1, false);
@@ -95,10 +94,13 @@ MainWindow::MainWindow(HashCalcApplication* parent) : QMainWindow()
    QSettings settings;
    algorithmComboBox->setCurrentText(settings.value("selectedalgorithm", "CRC32").toString());
    calcHashSumWhenFoundCheckbox->setChecked(settings.value("calchashsumwhenfound", false).toBool());
+   if (!calcHashSumWhenFoundCheckbox->isChecked()) {
+      hashCalculationOwnThreadCheckbox->setEnabled(false);
+   }
    hashCalculationOwnThreadCheckbox->setChecked(settings.value("hashcalculationownthread", true).toBool());
    mainWidget->restoreState(settings.value("splittersizes").toByteArray());
 
-   connect(filelist, SIGNAL(displayFile(QString,QString,QString)), this, SLOT(updateFileDisplay(QString,QString,QString)));
+   connect(filelist, SIGNAL(displayFile(QString,QString)), this, SLOT(updateFileDisplay(QString,QString)));
    connect(filelist, SIGNAL(fileListSizeChanged(int, int, int, int)), statusBox, SLOT(updateStatusBox(int, int, int, int)));
    connect(filelist, SIGNAL(fileListSizeChanged(int, int, int, int)), actions, SLOT(filelistChanged(int, int, int, int)));
 }
@@ -229,16 +231,24 @@ void MainWindow::createFileDisplayBox()
 
 /**
  * @brief MainWindow::updateFileDisplay
- * @param basepath Selected file's base path.
  * @param filename Selected file's relative file name.
  * @param hash The hash sum.
  *
  * Update the text fiends in the file display box created by createFileDisplayBox().
  */
-void MainWindow::updateFileDisplay(QString basepath, QString filename, QString hash)
+void MainWindow::updateFileDisplay(QString filename, QString hash)
 {
    displayFileBox->setVisible(true);
-   displayFilenameLine->setText(basepath + filename);
+   if (!filename.isEmpty()) {
+      if (filename.left(1) != QDir::separator()) {
+         QString basepath = mainproject->getSourceDirectory()->getPath();
+         if (basepath.right(1) != QDir::separator()) {
+            basepath += QDir::separator();
+         }
+         filename.prepend(basepath);
+      }
+   }
+   displayFilenameLine->setText(filename);
    displayHash->setText(hash);
 }
 
@@ -276,11 +286,11 @@ void MainWindow::createWorkerThreads()
    hasherthread->start();
 
    connect(this, SIGNAL(findFiles(HashProject*)), filefinder, SLOT(scanProject(HashProject*)));
-   connect(this, SIGNAL(hashFiles(HashProject*, bool)), hasher, SLOT(hashProject(HashProject*, bool)));
+   connect(this, SIGNAL(hashFiles(HashProject*, bool, QString)), hasher, SLOT(hashProject(HashProject*, bool, QString)));
 
    connect(filefinder, SIGNAL(fileFound(HashProject::File, bool)), filelist, SLOT(addFile(HashProject::File, bool)));
 
-   connect(filelist, SIGNAL(hashFile(int, HashProject::File, QString)), hasher, SLOT(hashFile(int, HashProject::File, QString)));
+   connect(filelist, SIGNAL(hashFile(int, QString, HashProject::File, QString)), hasher, SLOT(hashFile(int, QString, HashProject::File, QString)));
    connect(hasher, SIGNAL(fileHashCalculated(int, QString, QString, bool)), filelist, SLOT(fileHashCalculated(int, QString, QString, bool)));
 
    /**
@@ -489,7 +499,7 @@ void MainWindow::startFileHasher()
    startProcessWork();
    progressbar->setMaximum(filelist->rowCount());
    emit processWorkStarted();
-   emit hashFiles(mainproject, false);
+   emit hashFiles(mainproject, false, mainproject->getSourceDirectory()->getPath());
 }
 
 /**
@@ -513,7 +523,7 @@ void MainWindow::startVerifyFiles()
          filelist->writeLock(false);
          return;
       }
-      filelist->removeVerifiedHashes();
+      filelist->removeVerifications();
    }
    else if (filelist->isVerificationPartiallyCompleted()) {
       QMessageBox msgBox(QMessageBox::Question, "Verifier", "Some of the listed files have already been verified. Redo everyting?");
@@ -522,7 +532,7 @@ void MainWindow::startVerifyFiles()
       QPushButton *abortButton = msgBox.addButton(QMessageBox::Abort);
       msgBox.exec();
       if (msgBox.clickedButton() == clearButton) {
-         filelist->removeVerifiedHashes();
+         filelist->removeVerifications();
       } else if (msgBox.clickedButton() == abortButton) {
          filelist->writeLock(false);
          return;
@@ -531,8 +541,7 @@ void MainWindow::startVerifyFiles()
    startProcessWork();
    progressbar->setMaximum(filelist->rowCount());
    emit processWorkStarted();
-   filelist->setVerificationColumnsVisibility(true);
-   emit hashFiles(mainproject, true);
+   emit hashFiles(mainproject, true, mainproject->getVerifyDirectory()->getPath());
 }
 
 /**
@@ -546,12 +555,42 @@ void MainWindow::clearResults()
    QMessageBox msgBox(QMessageBox::NoIcon, "Please confirm", "Clear the file list?");
    msgBox.addButton(QMessageBox::Yes);
    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
-   if (msgBox.exec() == QMessageBox::Cancel) {
+   if (msgBox.exec() != QMessageBox::Yes) {
       return;
    }
    // Remove any appended file name from the title bar.
    setWindowTitle(tr("File Hash Calculator"));
    filelist->clearContents();
+   actionStopped();
+}
+
+/**
+ * @brief MainWindow::clearResults
+ */
+void MainWindow::clearHashes()
+{
+   QMessageBox msgBox(QMessageBox::NoIcon, "Please confirm", "Remove all calculated hashes?");
+   msgBox.addButton(QMessageBox::Yes);
+   msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+   if (msgBox.exec() != QMessageBox::Yes) {
+      return;
+   }
+   filelist->removeHashes();
+   actionStopped();
+}
+
+/**
+ * @brief MainWindow::clearVerifications
+ */
+void MainWindow::clearVerifications()
+{
+   QMessageBox msgBox(QMessageBox::NoIcon, "Please confirm", "Remove all verification data?");
+   msgBox.addButton(QMessageBox::Yes);
+   msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+   if (msgBox.exec() != QMessageBox::Yes) {
+      return;
+   }
+   filelist->removeVerifications();
    actionStopped();
 }
 
@@ -589,6 +628,16 @@ void MainWindow::actionStopped()
       sourceDirectoryWidget->setReadOnly(true);
    }
    if (filelist->isHashPartiallyCompleted()) {
+      clearHashesButton->setVisible(true);
+   } else {
+      clearHashesButton->setVisible(false);
+   }
+   if (filelist->isVerificationPartiallyCompleted()) {
+      clearVerificationsButton->setVisible(true);
+   } else {
+      clearVerificationsButton->setVisible(false);
+   }
+   if (filelist->isHashPartiallyCompleted()) {
       verifyFilesButton->setVisible(true);
    } else {
       verifyFilesButton->setVisible(false);
@@ -623,12 +672,16 @@ void MainWindow::createActionButtonBox()
    verifyFilesButton = new QPushButton(tr("Verify"));
    cancelButton = new QPushButton(tr("Cancel"));
    clearResultsButton = new QPushButton(tr("Clear list"));
+   clearHashesButton = new QPushButton(tr("Clear hashes"));
+   clearVerificationsButton = new QPushButton(tr("Clear verifications"));
 
    connect(findFilesButton, SIGNAL(clicked()), this, SLOT(startFileFinder()));
+   connect(clearResultsButton, SIGNAL(clicked()), this, SLOT(clearResults()));
    connect(hashFilesButton, SIGNAL(clicked()), this, SLOT(startFileHasher()));
+   connect(clearHashesButton, SIGNAL(clicked()), this, SLOT(clearHashes()));
+   connect(clearVerificationsButton, SIGNAL(clicked()), this, SLOT(clearVerifications()));
    connect(verifyFilesButton, SIGNAL(clicked()), this, SLOT(startVerifyFiles()));
    connect(cancelButton, SIGNAL(clicked()), this, SLOT(stopScan()));
-   connect(clearResultsButton, SIGNAL(clicked()), this, SLOT(clearResults()));
 
    progressbar = new QProgressBar;
    QHBoxLayout* progresslayout = new QHBoxLayout;
@@ -641,12 +694,16 @@ void MainWindow::createActionButtonBox()
 
    QGridLayout* actionButtonsLayout = new QGridLayout;
    actionButtonsLayout->addWidget(findFilesButton, 0, 0);
-   actionButtonsLayout->addWidget(hashFilesButton, 0, 1);
-   actionButtonsLayout->addWidget(clearResultsButton, 1, 0);
-   actionButtonsLayout->addWidget(verifyFilesButton, 1, 1);
+   actionButtonsLayout->addWidget(clearResultsButton, 0, 1);
+   actionButtonsLayout->addWidget(hashFilesButton, 1, 0);
+   actionButtonsLayout->addWidget(clearHashesButton, 1, 1);
+   actionButtonsLayout->addWidget(verifyFilesButton, 2, 0);
+   actionButtonsLayout->addWidget(clearVerificationsButton, 2, 1);
    hashFilesButton->setVisible(false);
    verifyFilesButton->setVisible(false);
    clearResultsButton->setVisible(false);
+   clearHashesButton->setVisible(false);
+   clearVerificationsButton->setVisible(false);
    actionButtons = new QWidget;
    actionButtons->setLayout(actionButtonsLayout);
 
@@ -661,21 +718,52 @@ void MainWindow::createActionButtonBox()
 }
 
 /**
- * @brief MainWindow::createDirectoryBox
+ * @brief MainWindow::createDirectoryBoxes
+ */
+void MainWindow::pathStatusChanged()
+{
+   SourceDirectory* sourceDir = mainproject->getSourceDirectory();
+   if (sourceDir && sourceDir->isValid()) {
+      findFilesButton->setEnabled(true);
+   } else {
+      findFilesButton->setEnabled(false);
+   }
+   SourceDirectory* verifyDir = mainproject->getVerifyDirectory();
+   if (verifyDir && verifyDir->isValid()) {
+      verifyFilesButton->setEnabled(true);
+   } else {
+      verifyFilesButton->setEnabled(false);
+   }
+}
+
+/**
+ * @brief MainWindow::createDirectoryBoxes
  * Creates a group box widget containing a source directy widget.
  */
-void MainWindow::createDirectoryBox()
+void MainWindow::createDirectoryBoxes()
 {
    sourceDirectoryWidget = new SourceDirectoryWidget();
-   connect(mainproject, SIGNAL(sourceDirectoryChanged(SourceDirectory*)), sourceDirectoryWidget, SLOT(setDirNode(SourceDirectory*)));
-   mainproject->setSourceDirectory(new SourceDirectory(""));
+   QVBoxLayout* sourceDirectoryBoxLayout = new QVBoxLayout;
+   sourceDirectoryBoxLayout->setContentsMargins(0, 0, 0, 0);
+   sourceDirectoryBoxLayout->setSizeConstraint(QLayout::SetMinimumSize);
+   sourceDirectoryBoxLayout->addWidget(sourceDirectoryWidget);
+   sourceDirectoryBoxLayout->setAlignment(sourceDirectoryWidget, Qt::AlignTop);
+   sourceDirectoryBox = new QGroupBox("Source directory");
+   sourceDirectoryBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+   sourceDirectoryBox->setLayout(sourceDirectoryBoxLayout);
 
-   directoriesGroupBoxLayout = new QVBoxLayout;
-   directoriesGroupBoxLayout->setContentsMargins(0, 0, 0, 0);
-   directoriesGroupBoxLayout->setSizeConstraint(QLayout::SetMinimumSize);
-   directoriesGroupBoxLayout->addWidget(sourceDirectoryWidget);
-   directoriesGroupBoxLayout->setAlignment(sourceDirectoryWidget, Qt::AlignTop);
-   directoriesGroupBox = new QGroupBox("Source directory");
-   directoriesGroupBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-   directoriesGroupBox->setLayout(directoriesGroupBoxLayout);
+   verifyDirectoryWidget = new SourceDirectoryWidget();
+   QVBoxLayout* verifyDirectoryBoxLayout = new QVBoxLayout;
+   verifyDirectoryBoxLayout->setContentsMargins(0, 0, 0, 0);
+   verifyDirectoryBoxLayout->setSizeConstraint(QLayout::SetMinimumSize);
+   verifyDirectoryBoxLayout->addWidget(verifyDirectoryWidget);
+   verifyDirectoryBoxLayout->setAlignment(verifyDirectoryWidget, Qt::AlignTop);
+   verifyDirectoryBox = new QGroupBox("Verify directory");
+   verifyDirectoryBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+   verifyDirectoryBox->setLayout(verifyDirectoryBoxLayout);
+
+   sourceDirectoryWidget->setDirNode(mainproject->getSourceDirectory());
+   verifyDirectoryWidget->setDirNode(mainproject->getVerifyDirectory());
+   connect(sourceDirectoryWidget, SIGNAL(pathStatusSignal()), this, SLOT(pathStatusChanged()));
+   connect(verifyDirectoryWidget, SIGNAL(pathStatusSignal()), this, SLOT(pathStatusChanged()));
 }

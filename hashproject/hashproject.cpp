@@ -3,7 +3,6 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QMessageBox>
-#include <QDebug>
 #include <QDateTime>
 #include <QHash>
 #include <QLinkedList>
@@ -21,7 +20,8 @@ HashProject::HashProject(QObject *parent) :
 {
    basepathSettingName = "FileHasherSetting:Directory=";
    algorithmSettingName = "FileHasherSetting:Algorithm=";
-   sourceDirectory = 0;
+   sourceDirectory = new SourceDirectory("");
+   verifyDirectory = new SourceDirectory("");
    filelist = new FileList(this);
 }
 
@@ -30,27 +30,9 @@ HashProject::HashProject(QObject *parent) :
  */
 HashProject::~HashProject()
 {
-   if (sourceDirectory) {
-     delete sourceDirectory;
-   }
+   delete sourceDirectory;
+   delete verifyDirectory;
    delete filelist;
-}
-
-/**
- * @brief HashProject::setSourceDirectory
- * @param newDir The new directory.
- *
- * Changes which source directory object is tied to this project.
- * Note that the source directory's path can be changed independently of this function.
- */
-void HashProject::setSourceDirectory(SourceDirectory* newDir)
-{
-   SourceDirectory* oldDir = sourceDirectory;
-   sourceDirectory = newDir;
-   emit sourceDirectoryChanged(newDir);
-   if (oldDir) {
-      delete oldDir;
-   }
 }
 
 /**
@@ -100,7 +82,6 @@ bool HashProject::openFile(QString filename)
 
    QTextStream textstream(&file);
    QString inpath = QFileInfo(filename).path();
-   QString basepath, fullbasepath;
    QString algorithm = "CRC32";
 
    QHash<QString, HashProject::File> newFiles;
@@ -115,23 +96,9 @@ bool HashProject::openFile(QString filename)
          isComment = true;
       }
       int algorithmSettingPos = textline.indexOf(algorithmSettingName);
-      int basepathSettingPos = textline.indexOf(basepathSettingName);
       if (isComment && algorithmSettingPos != -1) {
          // It's algorithm metadata, use the new value for the following list entries.
          algorithm = textline.right(textline.length() - algorithmSettingPos - algorithmSettingName.length());
-      } else if (isComment && basepathSettingPos != -1) {
-         // It's basepath metadata, use the new value for the following list entries.
-         basepath = textline.right(textline.length() - basepathSettingPos - basepathSettingName.length());
-         SourceDirectory* newDir;
-         if (QFileInfo(basepath).isRelative()) {
-            // The basepath is relative the stored location.
-            fullbasepath = inpath + QDir::separator() + basepath;
-            newDir = new SourceDirectory(fullbasepath);
-         } else {
-            // It's an absolute address.
-            newDir = new SourceDirectory(basepath);
-         }
-         setSourceDirectory(newDir);
       } else {
          QStringList elements(textline);
          QString outfilename;
@@ -150,7 +117,6 @@ bool HashProject::openFile(QString filename)
          if (outfilename.isNull()) {
             outfilename = elements.first();
          }
-         outfilename = outfilename.remove(0, basepath.length());
          elements.removeFirst();
          QString hash;
          if (elements.length() > 0) {
@@ -169,13 +135,6 @@ bool HashProject::openFile(QString filename)
             newfile.filename = outfilename;
             newfile.hash = hash;
             newfile.algorithm = algorithm;
-            if (basepath.isEmpty() && fullbasepath.isEmpty()) {
-               newfile.basepath = inpath;
-            } else if (fullbasepath.isEmpty()) {
-               newfile.basepath = basepath;
-            } else {
-               newfile.basepath = fullbasepath;
-            }
          }
          newFiles[outfilename] = newfile;
       }
@@ -189,10 +148,9 @@ bool HashProject::openFile(QString filename)
       }
    }
 
-   if (!sourceDirectory) {
-      SourceDirectory* newDir = new SourceDirectory(inpath);
-      setSourceDirectory(newDir);
-   }
+   sourceDirectory->setPath(inpath);
+   verifyDirectory->setPath(inpath);
+
    filelist->fileAdditionFinished();
    file.close();
    return true;
@@ -230,13 +188,7 @@ bool HashProject::saveFile(QString filename)
    out << datetime.date().year() << "-" << datetime.date().month() << "-" << datetime.date().day() << " ";
    out << datetime.time().hour() << ":" << datetime.time().minute() << "." << datetime.time().second() << endl;
    out << "; ---------------" << endl;
-
    out << "; " << algorithmSettingName << currAlgorithm << endl;
-   QString basepath = filelist->item(0, 0)->text();
-   if (basepath.indexOf(outpath) == 0) {
-      basepath.remove(0, outpath.length() + 1);
-   }
-   out << "; " << basepathSettingName << basepath << endl;
    out << "; ---------------" << endl;
 
    for (int i=0; i < filelist->rowCount(); i++) {

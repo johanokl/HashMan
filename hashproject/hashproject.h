@@ -13,7 +13,6 @@ class HashProject : public QObject
 public:
 
    struct File {
-      QString basepath;
       QString filename;
       qint64 filesize;
       QString hash;
@@ -36,20 +35,20 @@ public:
       return sourceDirectory;
    }
 
+   SourceDirectory* getVerifyDirectory() const {
+      return verifyDirectory;
+   }
+
    FileList* getDataTable() const { return filelist; }
    void setDataTable(FileList* filelist) { this->filelist = filelist; }
 
-signals:
-   void sourceDirectoryChanged(SourceDirectory*);
-
 public slots:
-   void setSourceDirectory(SourceDirectory* newDir);
-   //
    void setSettings(Settings newSettings);
    Settings getSettings();
 
 private:
    SourceDirectory* sourceDirectory;
+   SourceDirectory* verifyDirectory;
    FileList* filelist;
    Settings activeSettings;
 

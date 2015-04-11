@@ -29,13 +29,15 @@ public slots:
 public:
    SourceDirectoryWidget(SourceDirectory* node=0);
 
+signals:
+   void pathStatusSignal();
+
 private:
    QLineEdit* lineedit;
    QPushButton* browsebutton;
    QPushButton* openbutton;
    QLabel* validpathlabel;
 
-private:
    QWidget* owner;
    SourceDirectory* dirNode;
 };

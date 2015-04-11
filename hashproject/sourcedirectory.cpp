@@ -26,11 +26,15 @@ SourceDirectory::SourceDirectory(QString dir)
  */
 void SourceDirectory::setPath(QString newpath)
 {
-   this->path = newpath;
+   if (newpath == path) {
+      return;
+   }
+   path = newpath;
+   emit pathChanged(newpath);
    QDir dir(newpath);
-   if (dir.exists() != this->validpath) {
-      this->validpath = !this->validpath;
-      emit pathStatusChanged(this->validpath);
+   if (dir.exists() != validpath) {
+      validpath = !validpath;
+      emit pathStatusChanged(validpath);
    }
 }
 

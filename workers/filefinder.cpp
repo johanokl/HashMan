@@ -61,7 +61,9 @@ void FileFinder::scanProject(HashProject* hashproject)
       emit scanFinished();
       return;
    }
-   QDirIterator iterator(directory->getPath(), QDirIterator::Subdirectories);
+   QString basepath = directory->getPath() + QDir::separator();
+
+   QDirIterator iterator(basepath, QDirIterator::Subdirectories);
 
    while (iterator.hasNext()) {
       if (aborted) {
@@ -73,15 +75,11 @@ void FileFinder::scanProject(HashProject* hashproject)
       if (!iterator.fileInfo().isDir()) {
          // Not a directory. Create a new File object and emit it.
          QString filename = iterator.filePath();
-         HashProject::File filenode;
-         filenode.basepath = directory->getPath();
-         if (filenode.basepath.lastIndexOf(QDir::separator()) != (filenode.basepath.length() - 1)) {
-            filenode.basepath += QDir::separator();
-         }
-         filenode.filename = filename.remove(0, filenode.basepath.length());
+         HashProject::File filenode;         
+         filenode.filename = filename.remove(0, basepath.length());
          filenode.filesize = iterator.fileInfo().size();
          if (settings.blockinghashcalc && settings.scanimmediately) {
-            filenode.hash = hasher.hashFile(-1, filenode, settings.algorithm);
+            filenode.hash = hasher.hashFile(-1, basepath, filenode, settings.algorithm);
             filenode.algorithm = settings.algorithm;
          }
          emit fileFound(filenode, false);

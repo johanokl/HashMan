@@ -44,7 +44,7 @@ public:
 
 signals:
    void findFiles(HashProject*);
-   void hashFiles(HashProject*, bool);
+   void hashFiles(HashProject*, bool, QString basepath="");
    void processWorkStarted();
 
 public slots:
@@ -59,12 +59,16 @@ public slots:
    void stopScan();
    void actionStopped();
    //
+   void pathStatusChanged();
+   //
    void clearResults();
+   void clearVerifications();
+   void clearHashes();
    void saveFile(QString);
    void openFile(QString);
    void setSidebarVisible(bool);
    void setFileSizeVisible(bool);
-   void updateFileDisplay(QString basepath, QString filename, QString hash);
+   void updateFileDisplay(QString filename, QString hash);
    void updateProjectSettings();
    //
    void removeSelectedRows();
@@ -78,7 +82,7 @@ private:
    void createWorkerThreads();
    void createActionButtonBox();
    void createOptionsBox();
-   void createDirectoryBox();
+   void createDirectoryBoxes();
    void createFileDisplayBox();
 
    HashProject::Settings getSettings();
@@ -113,9 +117,10 @@ private:
    QLineEdit* displayHash;
 
    // Directories
-   QGroupBox* directoriesGroupBox;
-   QVBoxLayout* directoriesGroupBoxLayout;
+   QGroupBox* sourceDirectoryBox;
+   QGroupBox* verifyDirectoryBox;
    SourceDirectoryWidget* sourceDirectoryWidget;
+   SourceDirectoryWidget* verifyDirectoryWidget;
 
    // Options
    QGroupBox* optionsBox;
@@ -132,6 +137,8 @@ private:
    QPushButton* hashFilesButton;
    QPushButton* verifyFilesButton;
    QPushButton* clearResultsButton;
+   QPushButton* clearHashesButton;
+   QPushButton* clearVerificationsButton;
    QProgressBar* progressbar;
    QWidget* progresswidget;
 

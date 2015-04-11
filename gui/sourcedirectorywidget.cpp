@@ -61,17 +61,19 @@ SourceDirectoryWidget::SourceDirectoryWidget(SourceDirectory* dirNode)
  */
 void SourceDirectoryWidget::setDirNode(SourceDirectory* newNode)
 {
-   if (newNode && newNode != dirNode) {
-      if (dirNode) {
-         lineedit->disconnect(dirNode);
-         dirNode->disconnect(this);
-      }
-      connect(lineedit, SIGNAL(textChanged(QString)), newNode, SLOT(setPath(QString)));
-      connect(newNode, SIGNAL(pathStatusChanged(bool)), this, SLOT(pathStatusChanged(bool)));
-      pathStatusChanged(newNode->isValid());
-      this->setDir(newNode->getPath());
-      dirNode = newNode;
+   if (!newNode || newNode == dirNode) {
+      return;
    }
+   if (dirNode) {
+      lineedit->disconnect(dirNode);
+      dirNode->disconnect(this);
+   }
+   dirNode = newNode;
+   connect(dirNode, SIGNAL(pathChanged(QString)), this, SLOT(setDir(QString)));
+   connect(lineedit, SIGNAL(textChanged(QString)), newNode, SLOT(setPath(QString)));
+   connect(newNode, SIGNAL(pathStatusChanged(bool)), this, SLOT(pathStatusChanged(bool)));
+   this->setDir(newNode->getPath());
+   pathStatusChanged(newNode->isValid());
 }
 
 /**
@@ -139,4 +141,5 @@ void SourceDirectoryWidget::pathStatusChanged(bool isValid)
       openbutton->setEnabled(false);
    }
    validpathlabel->repaint();
+   emit pathStatusSignal();
 }

@@ -45,32 +45,35 @@ Hasher::~Hasher()
  * If the verify boolean is set to true, the hash sums will be calculated for all
  * files that haven't been verified.
  */
-void Hasher::hashProject(HashProject *hashproject, bool verify)
+void Hasher::hashProject(HashProject *hashproject, bool verify, QString basepath)
 {
    startProcessWork();
-
    HashProject::Settings settings = hashproject->getSettings();
-   //
    QString algorithm = settings.algorithm;
    HashAlgorithm* hashalgorithm = crc32algorithm;
    if (algorithm != "CRC32") {
       hashalgorithm = qtcryptoalgorithms;
    }
-
-   const QTableWidget* filelist = hashproject->getDataTable();
    if (!hashproject || !hashalgorithm) {
       scanFinished();
       return;
    }
+   if (basepath.right(1) != QDir::separator()) {
+      basepath += QDir::separator();
+   }
+   const QTableWidget* filelist = hashproject->getDataTable();
    for (int i=0; i<filelist->rowCount(); i++) {
       if (aborted) {
          scanFinished();
          return;
       }
-      QString filename = filelist->item(i, 0)->text() + QDir::separator() + filelist->item(i, 1)->text();
-      QString previousHash = filelist->item(i, 3)->text();
-      QString previousVerify = filelist->item(i, 4)->text();
-      QString previousAlgorithm = filelist->item(i, 6)->text();
+      QString filename = filelist->item(i, 0)->text();
+      if (filename.left(1) != QDir::separator()) {
+         filename.prepend(basepath);
+      }
+      QString previousHash = filelist->item(i, 2)->text();
+      QString previousVerify = filelist->item(i, 3)->text();
+      QString previousAlgorithm = filelist->item(i, 5)->text();
       if ((verify && !previousHash.isEmpty() && previousVerify.isEmpty()) ||
           (!verify && previousHash.isEmpty())) {
          if (verify) {
@@ -115,7 +118,7 @@ void Hasher::noMoreFiles()
  * @param verify Pass-trough to signal fileHashCalculated.
  * @return The hash sum in string form.
  */
-QString Hasher::hashFile(int id, HashProject::File file, QString algorithm, bool verify)
+QString Hasher::hashFile(int id, QString basepath, HashProject::File file, QString algorithm, bool verify)
 {
    QString hash;
    if (aborted) {
@@ -125,7 +128,8 @@ QString Hasher::hashFile(int id, HashProject::File file, QString algorithm, bool
    if (algorithm != "CRC32") {
       hashalgorithm = qtcryptoalgorithms;
    }
-   hash = hashalgorithm->hashFile(file.basepath + file.filename, algorithm);
+   hash = hashalgorithm->hashFile(basepath + file.filename, algorithm);
+
    if (id > -1) {
       emit fileHashCalculated(id, algorithm, hash, verify);
    }

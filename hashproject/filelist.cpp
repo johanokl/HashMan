@@ -14,7 +14,6 @@
  */
 
 #include <QHeaderView>
-#include <QDebug>
 #include <QKeyEvent>
 #include <QKeySequence>
 #include <QMessageBox>
@@ -23,6 +22,7 @@
 #include <QDir>
 
 #include "filelist.h"
+#include "sourcedirectory.h"
 
 /**
  * @brief FileList::FileList
@@ -40,7 +40,6 @@ FileList::FileList(HashProject* parent)
    qRegisterMetaType<HashProject::File>("HashProject::File");
 
    QStringList labels;
-   labels.append(tr("Basepath"));
    labels.append(tr("Name"));
    labels.append(tr("Filesize"));
    labels.append(tr("Hash"));
@@ -48,15 +47,17 @@ FileList::FileList(HashProject* parent)
    labels.append(tr("Match"));
    labels.append(tr("Alg."));
 
-   setColumnCount(7);
+   setColumnCount(6);
+   setHashesColumnsVisibility(false);
+   setVerificationColumnsVisibility(false);
+   setRowCount(0);
    setShowGrid(true);
    setWordWrap(false);
    setEditTriggers(QAbstractItemView::NoEditTriggers);
    setHorizontalHeaderLabels(labels);
-   setColumnHidden(0, true);
    removeHashes();
    horizontalHeader()->setStretchLastSection(false);
-   horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+   horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
    setSelectionBehavior(QAbstractItemView::SelectRows);
    setSelectionMode(QAbstractItemView::ExtendedSelection);
 
@@ -95,17 +96,17 @@ void FileList::removeSelectedRows()
       numHashes = 0;
       numVerifiedHashes = 0;
       for (int i=0; i<rowCount(); i++) {
-         if (!item(i, 3)->text().isEmpty()) {
+         if (!item(i, 2)->text().isEmpty()) {
             numHashes++;
          }
-         if (!item(i, 4)->text().isEmpty()) {
+         if (!item(i, 3)->text().isEmpty()) {
             numVerifiedHashes++;
          }
       }
       emit fileListSizeChanged(rowCount(), numHashes, numVerifiedHashes, numInvalidFiles);
       emit processingDone();
       // Reset the info bar widget.
-      emit displayFile("", "", "");
+      emit displayFile("", "");
    }
 }
 
@@ -193,10 +194,11 @@ void FileList::clearContents()
    numHashes = 0;
    numVerifiedHashes = 0;
    numInvalidFiles = 0;
-   emit fileListSizeChanged(rowCount(), numHashes, numVerifiedHashes, numInvalidFiles);
    setVerificationColumnsVisibility(false);
+   setHashesColumnsVisibility(false);
+   emit fileListSizeChanged(rowCount(), numHashes, numVerifiedHashes, numInvalidFiles);
    // Reset the info bar widget.
-   emit displayFile("", "", "");
+   emit displayFile("", "");
 }
 
 /**
@@ -208,7 +210,7 @@ void FileList::rowSelectionChanged()
    QList<QTableWidgetItem *> selectionList = selectedItems();
    if (!selectionList.isEmpty()) {
       int rowNum = selectionList.first()->row();
-      emit displayFile(item(rowNum, 0)->text(), item(rowNum, 1)->text(), item(rowNum, 3)->text());
+      emit displayFile(item(rowNum, 0)->text(), item(rowNum, 2)->text());
    }
 }
 
@@ -220,13 +222,26 @@ void FileList::rowSelectionChanged()
  */
 void FileList::setVerificationColumnsVisibility(bool visible)
 {
+   setColumnHidden(3, !visible);
    setColumnHidden(4, !visible);
+}
+
+/**
+ * @brief FileList::setVerificationColumnsVisibility
+ * @param visible
+ * Whether or not the column with the verification values should be visible.
+ * No point in having it visible if there's no verification data.
+ */
+void FileList::setHashesColumnsVisibility(bool visible)
+{
+   setColumnHidden(2, !visible);
    setColumnHidden(5, !visible);
 }
 
+
 void FileList::setFileSizeVisibility(bool visible)
 {
-   setColumnHidden(2, !visible);
+   setColumnHidden(1, !visible);
 }
 
 /**
@@ -235,28 +250,35 @@ void FileList::setFileSizeVisibility(bool visible)
  */
 void FileList::removeHashes()
 {
-   numHashes = 0;
-   for (int i=0; i<rowCount(); i++) {
-      item(i, 3)->setText("");
+   if (numHashes == 0) {
+      return;
    }
-   removeVerifiedHashes();
+   numHashes = 0;
+   setHashesColumnsVisibility(false);
+   for (int i=0; i<rowCount(); i++) {
+      item(i, 2)->setText("");
+      item(i, 5)->setText("");
+   }
+   removeVerifications();
 }
 
 /**
- * @brief FileList::removeVerifiedHashes
+ * @brief FileList::removeVerifications
  * Remove all data about verified hashes from the list, keep the files and hashes.
  */
-void FileList::removeVerifiedHashes()
+void FileList::removeVerifications()
 {
-   numVerifiedHashes = 0;
-   numInvalidFiles = 0;
-   for (int i=0; i<rowCount(); i++) {
-      item(i, 4)->setText("");
-      item(i, 5)->setText("");
-      item(i, 5)->setBackground(QBrush());
+   if (numVerifiedHashes != 0 || numInvalidFiles != 0) {
+      numVerifiedHashes = 0;
+      numInvalidFiles = 0;
+      setVerificationColumnsVisibility(false);
+      for (int i=0; i<rowCount(); i++) {
+         item(i, 3)->setText("");
+         item(i, 4)->setText("");
+         item(i, 4)->setBackground(QBrush());
+      }
    }
    emit fileListSizeChanged(rowCount(), numHashes, numVerifiedHashes, numInvalidFiles);
-   setVerificationColumnsVisibility(false);
 }
 
 /**
@@ -325,9 +347,12 @@ void FileList::processBuffer(bool forcedUpdate)
       return;
    }
    int numFiles = rowCount();
+   QString basepath = parent->getSourceDirectory()->getPath();
+   if (basepath.right(1) != QDir::separator()) {
+      basepath.append(QDir::separator());
+   }
    setRowCount(numFiles + filesToAdd.size());
    for (QList<HashProject::File>::const_iterator file = filesToAdd.constBegin(); file != filesToAdd.constEnd(); ++file) {
-      QTableWidgetItem* basepathcell = new QTableWidgetItem(QDir::toNativeSeparators((*file).basepath));
       QTableWidgetItem* filenamecell = new QTableWidgetItem(QDir::toNativeSeparators((*file).filename));
       QTableWidgetItem* filesizecell = new QTableWidgetItem;
       QTableWidgetItem* hashcell = new QTableWidgetItem;
@@ -345,8 +370,9 @@ void FileList::processBuffer(bool forcedUpdate)
          algorithmcell->setText((*file).algorithm.toUpper());
       }
       QFont cellFont;
+#ifdef Q_OS_MAC
       cellFont.setPointSize(cellFont.pointSize() - 1);
-      basepathcell->setFont(cellFont);
+#endif
       filenamecell->setFont(cellFont);
       filesizecell->setFont(cellFont);
       hashcell->setFont(cellFont);
@@ -354,19 +380,18 @@ void FileList::processBuffer(bool forcedUpdate)
       ismatchcell->setFont(cellFont);
       algorithmcell->setFont(cellFont);
 
-      setItem(numFiles, 0, basepathcell);
-      setItem(numFiles, 1, filenamecell);
-      setItem(numFiles, 2, filesizecell);
-      setItem(numFiles, 3, hashcell);
-      setItem(numFiles, 4, verifyhashcell);
-      setItem(numFiles, 5, ismatchcell);
-      setItem(numFiles, 6, algorithmcell);
+      setItem(numFiles, 0, filenamecell);
+      setItem(numFiles, 1, filesizecell);
+      setItem(numFiles, 2, hashcell);
+      setItem(numFiles, 3, verifyhashcell);
+      setItem(numFiles, 4, ismatchcell);
+      setItem(numFiles, 5, algorithmcell);
       if (!isWriteLocked) {
          setRowCount(numFiles);
          return;
       }
       if ((*file).hash.isEmpty() && parent->getSettings().scanimmediately) {
-         emit hashFile(numFiles, (*file), parent->getSettings().algorithm);
+         emit hashFile(numFiles, basepath, (*file), parent->getSettings().algorithm);
       }
       numFiles++;
    }
@@ -387,20 +412,26 @@ void FileList::fileHashCalculated(int id, QString algorithm, QString hash, bool 
 {
    if (id < rowCount() && id > -1) {
       hash = hash.toUpper();
-      if (!verify && item(id, 3)->text().isEmpty()) {
+      if (!verify && item(id, 2)->text().isEmpty()) {
+         if (numHashes == 0) {
+            setHashesColumnsVisibility(true);
+         }
          numHashes++;
-         item(id, 3)->setText(hash);
-         item(id, 6)->setText(algorithm);
+         item(id, 2)->setText(hash);
+         item(id, 5)->setText(algorithm);
       } else if (verify) {
+         if (numVerifiedHashes == 0) {
+            setVerificationColumnsVisibility(true);
+         }
          numVerifiedHashes++;
-         item(id, 4)->setText(hash);
+         item(id, 3)->setText(hash);
          // Make the status row green or red depending on if the verification matched.
-         if (item(id, 3)->text() == hash) {
-            item(id, 5)->setText("MATCH");
-            item(id, 5)->setBackground(QBrush(QColor(0,255,0)));
+         if (item(id, 2)->text() == hash) {
+            item(id, 4)->setText("MATCH");
+            item(id, 4)->setBackground(QBrush(QColor(0,255,0)));
          } else {
-            item(id, 5)->setText("INVALID");
-            item(id, 5)->setBackground(QBrush(QColor(255,0,0)));
+            item(id, 4)->setText("INVALID");
+            item(id, 4)->setBackground(QBrush(QColor(255,0,0)));
             numInvalidFiles++;
          }
       }

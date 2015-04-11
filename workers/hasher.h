@@ -30,8 +30,8 @@ public:
    void abort() { aborted = true; }
 
 public slots:
-   void hashProject(HashProject*, bool verify);
-   QString hashFile(int i, HashProject::File file, QString algorithm="CRC32", bool verify=false);
+   void hashProject(HashProject*, bool verify=false, QString basepath="");
+   QString hashFile(int i, QString basepath, HashProject::File file, QString algorithm="CRC32", bool verify=false);
    void noMoreFiles();
    void startProcessWork();
 

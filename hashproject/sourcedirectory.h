@@ -20,6 +20,7 @@ public:
 
 signals:
    void pathStatusChanged(bool status);
+   void pathChanged(QString);
 
 public slots:
    void setPath(QString newpath);

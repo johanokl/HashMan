@@ -11,7 +11,6 @@
 #include <QDragEnterEvent>
 #include <QMimeData>
 #include <QFileInfo>
-#include <QDebug>
 
 #include "hashproject/hashproject.h"
 #include "hashproject/sourcedirectory.h"
@@ -44,14 +43,25 @@ FileDrop::FileDrop(FileList* filelist)
  */
 void FileDrop::dragEnterEvent(QDragEnterEvent *event)
 {
-   hasWriteLock = filelist->writeLock(true);
-   if (hasWriteLock) {
-      setText(tr("Drop file(s)."));
-      //setBackgroundRole(QPalette::Highlight);
-      setStyleSheet("background-color: green;");
-   } else {
-      setText(tr("Not possible to add files."));
+   QList<QUrl> urlList;
+   if (event->mimeData()->hasUrls()) {
+      urlList = event->mimeData()->urls();
+   }
+   if (urlList.size() != 1) {
+      setText(tr("Only one directory can be dropped per time."));
       setStyleSheet("background-color: red;");
+   } else if (!filelist->isEmpty()) {
+      setText(tr("File list is not empty."));
+      setStyleSheet("background-color: red;");
+   } else if (!QFileInfo(urlList.first().path()).isDir()) {
+      setText(tr("Not possible to add individual files."));
+      setStyleSheet("background-color: red;");
+   } else  if (!(hasWriteLock = filelist->writeLock(true))) {
+      setText(tr("Not possible to drop at the moment."));
+      setStyleSheet("background-color: red;");
+   } else {
+      setText(tr("Drop directory."));
+      setStyleSheet("background-color: green;");
    }
    event->acceptProposedAction();
 }
@@ -74,30 +84,14 @@ void FileDrop::dragMoveEvent(QDragMoveEvent *event)
 void FileDrop::dropEvent(QDropEvent *event)
 {
    if (hasWriteLock) {
-      QLinkedList<HashProject::File> addFilesList;
-      const QMimeData *mimeData = event->mimeData();
-      if (mimeData->hasUrls()) {
-         QList<QUrl> urlList = mimeData->urls();
-         for (int i = 0; i < urlList.size(); i++) {
-            QString url = urlList.at(i).path();
-            QFileInfo fileinfo(url);
-            if (fileinfo.isDir()) {
-               qDebug() << "Drag and drop support for directories is currently not available.";
-            } else {
-               HashProject::File filenode;
-               filenode.algorithm ="";
-               filenode.basepath = "";
-               filenode.filename = url;
-               filenode.filesize = fileinfo.size();
-               addFilesList.append(filenode);
-            }
-         }
+      filelist->writeLock(false);
+      QList<QUrl> urlList;
+      if (event->mimeData()->hasUrls()) {
+         urlList = event->mimeData()->urls();
       }
-      if (addFilesList.count() > 0) {
+      if ((urlList.size() == 1) && (QFileInfo(urlList.first().path()).isDir())) {
+         emit directoryDropped(urlList.first().path());
          emit startProcessWork();
-         emit filesDropped(addFilesList);
-      } else {
-         filelist->writeLock(false);
       }
    }
    clear();
@@ -125,7 +119,7 @@ void FileDrop::dragLeaveEvent(QDragLeaveEvent *event)
  */
 void FileDrop::clear()
 {
-   setText(tr("Drag and drop files here"));
+   setText(tr("Drag and drop a directory here"));
    hasWriteLock = false;
    setStyleSheet("");
    setBackgroundRole(QPalette::Dark);

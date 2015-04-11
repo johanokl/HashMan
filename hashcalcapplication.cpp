@@ -11,7 +11,6 @@
  * Johan Lindqvist 2014, johan.lindqvist@gmail.com
  */
 
-#include <QDebug>
 #include <QMessageBox>
 #include <QFileOpenEvent>
 #include <QWindow>
