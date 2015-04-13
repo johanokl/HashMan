@@ -68,7 +68,7 @@ void Hasher::hashProject(HashProject *hashproject, bool verify, QString basepath
          return;
       }
       QString filename = filelist->item(i, 0)->text();
-      if (filename.left(1) != QDir::separator()) {
+      if (QFileInfo(filename).isRelative()) {
          filename.prepend(basepath);
       }
       QString previousHash = filelist->item(i, 2)->text();
@@ -128,7 +128,10 @@ QString Hasher::hashFile(int id, QString basepath, HashProject::File file, QStri
    if (algorithm != "CRC32") {
       hashalgorithm = qtcryptoalgorithms;
    }
-   hash = hashalgorithm->hashFile(basepath + file.filename, algorithm);
+   if (QFileInfo(file.filename).isRelative()) {
+      file.filename.prepend(basepath);
+   }
+   hash = hashalgorithm->hashFile(file.filename, algorithm);
 
    if (id > -1) {
       emit fileHashCalculated(id, algorithm, hash, verify);

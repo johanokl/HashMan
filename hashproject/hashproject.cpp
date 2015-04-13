@@ -18,7 +18,6 @@
 HashProject::HashProject(QObject *parent) :
    QObject(parent)
 {
-   basepathSettingName = "FileHasherSetting:Directory=";
    algorithmSettingName = "FileHasherSetting:Algorithm=";
    sourceDirectory = new SourceDirectory("");
    verifyDirectory = new SourceDirectory("");

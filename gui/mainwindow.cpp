@@ -240,7 +240,7 @@ void MainWindow::updateFileDisplay(QString filename, QString hash)
 {
    displayFileBox->setVisible(true);
    if (!filename.isEmpty()) {
-      if (filename.left(1) != QDir::separator()) {
+      if (QFileInfo(filename).isRelative()) {
          QString basepath = mainproject->getSourceDirectory()->getPath();
          if (basepath.right(1) != QDir::separator()) {
             basepath += QDir::separator();
@@ -670,7 +670,7 @@ void MainWindow::createActionButtonBox()
    findFilesButton = new QPushButton(tr("Find files"));
    hashFilesButton = new QPushButton(tr("Calculate"));
    verifyFilesButton = new QPushButton(tr("Verify"));
-   cancelButton = new QPushButton(tr("Cancel"));
+   cancelButton = new QPushButton(tr("Stop"));
    clearResultsButton = new QPushButton(tr("Clear list"));
    clearHashesButton = new QPushButton(tr("Clear hashes"));
    clearVerificationsButton = new QPushButton(tr("Clear verifications"));

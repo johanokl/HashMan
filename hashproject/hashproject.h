@@ -51,8 +51,6 @@ private:
    SourceDirectory* verifyDirectory;
    FileList* filelist;
    Settings activeSettings;
-
-   QString basepathSettingName;
    QString algorithmSettingName;
 };
 
