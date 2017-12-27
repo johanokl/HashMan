@@ -31,17 +31,17 @@ SOURCES     = gui/mainwindow.cpp \
     algorithms/qtcryptoalgorithms.cpp \
     hashcalcapplication.cpp
 
-TARGET = "FileHashCalculator"
+TARGET = "HashMan"
 
 macx {
   # Include spaces in the file name if on Mac OS X.
-  TARGET = "File Hash Calculator"
+  TARGET = "HashMan"
 }
 
 QMAKE_INFO_PLIST += Info.plist
 OTHER_FILES += Info.plist
 
-RESOURCES += FileHashCalculator.qrc
+RESOURCES += HashMan.qrc
 RC_ICONS += images/mainicon.ico
 
 ICON += images/mainicon.icns

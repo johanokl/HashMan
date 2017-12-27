@@ -1,7 +1,7 @@
 /**
  * Widget to display and modify an instance of the class SourceDirectory.
  *
- * Johan Lindqvist 2014, johan.lindqvist@gmail.com
+ * Johan Lindqvist (johan.lindqvist@gmail.com)
  */
 
 #ifndef SOURCEDIRECTORYWIDGET_H

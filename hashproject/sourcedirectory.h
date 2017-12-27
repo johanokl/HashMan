@@ -1,7 +1,7 @@
 /**
  * Holds a text path to a directory to be scanned for hashable files.
  *
- * Johan Lindqvist 2014, johan.lindqvist@gmail.com
+ * Johan Lindqvist (johan.lindqvist@gmail.com)
  */
 
 #ifndef SOURCEDIRECTORY_H

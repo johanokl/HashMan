@@ -1,7 +1,7 @@
 /**
  * The menu bars and actions for MainWindow.
  *
- * Johan Lindqvist 2014, johan.lindqvist@gmail.com
+ * Johan Lindqvist (johan.lindqvist@gmail.com)
  */
 
 #include <QtCore>
@@ -280,16 +280,15 @@ void MenuActions::setSidebarVisible(bool display)
  */
 void MenuActions::showAboutDialog()
 {
-   QMessageBox::about(parent(), tr("About File Hash Calculator"),
+   QMessageBox::about(parent(), tr("About"),
                       QString("<p align='center'>")
-                      .append("<h2>File Hash Calculator</h2>")
-                      .append("<hr> <br>")
-                      .append("(c) 2014 <br>")
-                      .append("Johan Lindqvist <br>")
+                      .append("<h2>HashMan</h2>")
+                      .append("<br>The File Hash Manager<br><hr><br>")
+                      .append("Johan Lindqvist<br>")
                       .append("<a href='mailto:johan.lindqvist@gmail.com'>johan.lindqvist@gmail.com</a>")
                       .append("<p>")
                       .append("<p align='center'>")
                       .append("More information at<br>")
-                      .append("<a href='http://github.com/johanokl/FileHashCalculator'>http://github.com/johanokl/FileHashCalculator</a><br>")
+                      .append("<a href='https://github.com/johanokl/HashMan'>http://github.com/johanokl/HashMan</a><br>")
                       .append("</p>"));
 }

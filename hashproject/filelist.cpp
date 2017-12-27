@@ -10,7 +10,7 @@
  * While the list widget can still be scrolled when the list is locked, the sorting
  * can't be changed.
  *
- * Johan Lindqvist 2014, johan.lindqvist@gmail.com
+ * Johan Lindqvist (johan.lindqvist@gmail.com)
  */
 
 #include <QHeaderView>

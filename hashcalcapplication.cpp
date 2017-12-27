@@ -8,7 +8,7 @@
  * Will be destroyed (and the application process exited) when the
  * last visible MainWindow is closed.
  *
- * Johan Lindqvist 2014, johan.lindqvist@gmail.com
+ * Johan Lindqvist (johan.lindqvist@gmail.com)
  */
 
 #include <QMessageBox>

@@ -1,7 +1,7 @@
 /**
  * The menu bars and actions for MainWindow.
  *
- * Johan Lindqvist 2014, johan.lindqvist@gmail.com
+ * Johan Lindqvist (johan.lindqvist@gmail.com)
  */
 
 #ifndef MENUACTIONS_H

@@ -2,7 +2,7 @@
  * Pure abstract class for hashing algorithms.
  * Inherited by for example the class Crc32algorithm.
  *
- * Johan Lindqvist 2014, johan.lindqvist@gmail.com
+ * Johan Lindqvist (johan.lindqvist@gmail.com)
  */
 
 #ifndef HASHALGORITHM_H

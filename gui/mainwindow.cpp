@@ -27,7 +27,7 @@
  */
 MainWindow::MainWindow(HashCalcApplication* parent) : QMainWindow()
 {
-   setWindowTitle(tr("File Hash Calculator"));
+   setWindowTitle(tr("HashMan"));
    setAttribute(Qt::WA_DeleteOnClose, true);
    setWindowIcon(QIcon(":/mainicon.icns"));
 
@@ -175,7 +175,7 @@ void MainWindow::saveFile(QString filename)
 {
    mainproject->saveFile(filename);
    QFileInfo fileInfo(filename);
-   setWindowTitle(fileInfo.fileName() + tr(" - File Hash Calculator"));
+   setWindowTitle(fileInfo.fileName() + tr(" - HashMan"));
    parent()->windowUpdated(this);
 }
 
@@ -199,7 +199,7 @@ void MainWindow::openFile(QString filename)
    calcHashSumWhenFoundCheckbox->setChecked(tmpCheckboxValue);
    if (openFileSuccess) {
       QFileInfo fileInfo(filename);
-      setWindowTitle(fileInfo.fileName() + tr(" - File Hash Calculator"));
+      setWindowTitle(fileInfo.fileName() + tr(" - HashMan"));
       parent()->windowUpdated(this);
       sourceDirectoryWidget->setReadOnly(true);
    }
@@ -560,7 +560,7 @@ void MainWindow::clearResults()
       return;
    }
    // Remove any appended file name from the title bar.
-   setWindowTitle(tr("File Hash Calculator"));
+   setWindowTitle(tr("HashMan"));
    filelist->clearContents();
    actionStopped();
 }

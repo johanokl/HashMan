@@ -5,7 +5,7 @@
  * At the moment only files can be added this way,
  * directories that are dropped are simply ignored.
  *
- * Johan Lindqvist 2014, johan.lindqvist@gmail.com
+ * Johan Lindqvist (johan.lindqvist@gmail.com)
  */
 
 #ifndef FILEDROP_H

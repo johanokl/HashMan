@@ -4,7 +4,7 @@
  * http://stackoverflow.com/questions/2587766/how-is-a-crc32-checksum-calculated and
  * http://en.wikipedia.org/wiki/Cyclic_redundancy_check#CRCs_and_data_integrity
  *
- * Johan Lindqvist 2014, johan.lindqvist@gmail.com
+ * Johan Lindqvist (johan.lindqvist@gmail.com)
  */
 
 #ifndef CRC32CALCULATOR_H

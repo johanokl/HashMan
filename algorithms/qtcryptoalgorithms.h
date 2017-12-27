@@ -7,7 +7,7 @@
  *  - MD4
  *  - MD5
  *
- * Johan Lindqvist 2014, johan.lindqvist@gmail.com
+ * Johan Lindqvist (johan.lindqvist@gmail.com)
  */
 
 #ifndef QTCRYPTOALGORITHMS_H

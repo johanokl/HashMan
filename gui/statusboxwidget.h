@@ -6,7 +6,7 @@
  *  - Number of files that have been verified.
  *  - Number of verified files for which the two hash sums mismatched.
  *
- * Johan Lindqvist 2014, johan.lindqvist@gmail.com
+ * Johan Lindqvist (johan.lindqvist@gmail.com)
  */
 
 #ifndef STATUSBOXWIDGET_H

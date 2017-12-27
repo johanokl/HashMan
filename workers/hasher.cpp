@@ -6,7 +6,7 @@
  * When in multithreaded mode, other threads can abort the scanning
  * by calling abort().
  *
- * Johan Lindqvist 2014, johan.lindqvist@gmail.com
+ * Johan Lindqvist (johan.lindqvist@gmail.com)
  */
 #include <QDir>
 
