@@ -103,6 +103,7 @@ MainWindow::MainWindow(HashCalcApplication* parent) : QMainWindow()
    connect(filelist, SIGNAL(displayFile(QString,QString)), this, SLOT(updateFileDisplay(QString,QString)));
    connect(filelist, SIGNAL(fileListSizeChanged(int, int, int, int)), statusBox, SLOT(updateStatusBox(int, int, int, int)));
    connect(filelist, SIGNAL(fileListSizeChanged(int, int, int, int)), actions, SLOT(filelistChanged(int, int, int, int)));
+   updateProjectSettings();
 }
 
 /**
