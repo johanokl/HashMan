@@ -11,7 +11,6 @@
 
 #include <QLabel>
 #include <QGridLayout>
-
 #include "statusboxwidget.h"
 
 /**
@@ -30,6 +29,10 @@ StatusBoxWidget::StatusBoxWidget()
    numhashedlabel = new QLabel("0");
    numverifiedlabel = new QLabel("0");
    numinvalidlabel = new QLabel("0");
+   numfileslabel->setFixedWidth(120);
+   numhashedlabel->setFixedWidth(120);
+   numverifiedlabel->setFixedWidth(120);
+   numinvalidlabel->setFixedWidth(120);
 
    QGridLayout* layout = new QGridLayout;
    layout->addWidget(fileslabel, 0, 1);
