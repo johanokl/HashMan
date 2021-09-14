@@ -36,7 +36,7 @@ FileList::FileList(HashProject* parent)
    isWriteLocked = false;
    numInvalidFiles = 0;
 
-   qRegisterMetaType<QLinkedList<HashProject::File> >("QLinkedList<HashProject::File>");
+   qRegisterMetaType<std::list<HashProject::File> >("std::list<HashProject::File>");
    qRegisterMetaType<HashProject::File>("HashProject::File");
 
    QStringList labels;
@@ -77,7 +77,7 @@ void FileList::removeSelectedRows()
          selectedRows.insert(item->row());
       }
       //get a list, and sort it big to small
-      QList<int> rows = selectedRows.toList();
+      QList<int> rows = selectedRows.values();
       std::sort(rows.begin(), rows.end(), std::greater<int>());
       QList<int>::const_iterator it = rows.begin();
       int deleteLastRows = 0;
@@ -124,7 +124,7 @@ void FileList::copySelectedRowsToClipboard()
          selectedRows.insert(item->row());
       }
       //get a list, and sort it big to small
-      QList<int> rows = selectedRows.toList();
+      QList<int> rows = selectedRows.values();
       std::sort(rows.begin(), rows.end());
       QString clipboardText;
       for (QList<int>::const_iterator it = rows.begin(); it != rows.end(); it++) {
@@ -286,9 +286,9 @@ void FileList::removeVerifications()
  * @param files
  * Add a list of files. Force an update of the list after they've been added.
  */
-void FileList::addFiles(QLinkedList<HashProject::File> files)
+void FileList::addFiles(std::list<HashProject::File> files)
 {
-   for (QLinkedList<HashProject::File>::const_iterator file = files.constBegin(); file != files.constEnd(); ++file) {
+   for (auto file = files.cbegin(); file != files.cend(); file++) {
       filesToAdd.append(*file);
    }
    processBuffer(true);

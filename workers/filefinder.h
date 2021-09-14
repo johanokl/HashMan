@@ -18,7 +18,7 @@
 #define FILEFINDER_H
 
 #include <QThread>
-#include <QLinkedList>
+#include <list>
 
 #include "hashproject/hashproject.h"
 #include "hashproject/filelist.h"

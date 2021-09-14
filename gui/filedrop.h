@@ -12,7 +12,7 @@
 #define FILEDROP_H
 
 #include <QLabel>
-#include <QLinkedList>
+#include <list>
 #include "hashproject/hashproject.h"
 
 class QMimeData;

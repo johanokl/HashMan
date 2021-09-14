@@ -18,7 +18,7 @@
 
 #include <QObject>
 #include <QTableWidget>
-#include <QLinkedList>
+#include <list>
 
 #include "hashproject.h"
 
@@ -53,7 +53,7 @@ signals:
 public slots:
    void fileAdditionFinished();
    void hashingFinished();
-   void addFiles(QLinkedList<HashProject::File> files);
+   void addFiles(std::list<HashProject::File> files);
    void addFile(HashProject::File file, bool forceUpdate=false);
    void fileHashCalculated(int id, QString algorithm, QString hash, bool verify);
    void removeHashes();

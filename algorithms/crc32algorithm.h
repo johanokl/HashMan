@@ -11,7 +11,7 @@
 #define CRC32CALCULATOR_H
 
 #include <QObject>
-#include <QLinkedList>
+#include <list>
 
 #include "hashalgorithm.h"
 
